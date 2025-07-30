@@ -5,7 +5,7 @@ import { SongCard, SongData } from "@/components/SongCard";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { WelcomeSection } from "@/components/WelcomeSection";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
