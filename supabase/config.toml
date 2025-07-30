@@ -1,1 +1,4 @@
 project_id = "afnythdjlarqfxyethyn"
+
+[functions.search-song]
+verify_jwt = false
