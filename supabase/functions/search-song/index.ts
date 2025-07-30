@@ -4,7 +4,7 @@ import { corsHeaders } from '../_shared/cors.ts'
 const SPOTIFY_CLIENT_ID = Deno.env.get('SPOTIFY_CLIENT_ID')!
 const SPOTIFY_CLIENT_SECRET = Deno.env.get('SPOTIFY_CLIENT_SECRET')!
 const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY')!
-const GENIUS_ACCESS_TOKEN = Deno.env.get('GENIUS_ACCESS_TOKEN')!
+const GENIUS_ACCESS_TOKEN = Deno.env.get('GENIUS_CLIENT_ACCESS_TOKEN')!
 
 interface SpotifyTrack {
   id: string
@@ -30,6 +30,10 @@ async function getSpotifyToken() {
     body: 'grant_type=client_credentials'
   })
   
+  if (!response.ok) {
+    throw new Error(`Spotify auth failed: ${response.status}`)
+  }
+  
   const data = await response.json()
   return data.access_token
 }
@@ -42,20 +46,41 @@ async function searchSpotify(query: string, token: string) {
     }
   )
   
+  if (!response.ok) {
+    console.error(`Spotify search failed: ${response.status}`)
+    return undefined
+  }
+  
   const data = await response.json()
   return data.tracks?.items?.[0] as SpotifyTrack | undefined
 }
 
 async function getSpotifyRecommendations(trackId: string, token: string) {
-  const response = await fetch(
-    `https://api.spotify.com/v1/recommendations?seed_tracks=${trackId}&limit=4`,
-    {
-      headers: { 'Authorization': `Bearer ${token}` }
+  try {
+    const response = await fetch(
+      `https://api.spotify.com/v1/recommendations?seed_tracks=${trackId}&limit=4`,
+      {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    )
+    
+    if (!response.ok) {
+      console.error(`Spotify recommendations failed: ${response.status}`)
+      return []
     }
-  )
-  
-  const data = await response.json()
-  return data.tracks || []
+    
+    const text = await response.text()
+    if (!text) {
+      console.error('Empty response from Spotify recommendations')
+      return []
+    }
+    
+    const data = JSON.parse(text)
+    return data.tracks || []
+  } catch (error) {
+    console.error('Error getting Spotify recommendations:', error)
+    return []
+  }
 }
 
 async function searchYouTube(query: string) {
