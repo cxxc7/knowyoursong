@@ -5,6 +5,7 @@ import { SongCard, SongData } from "@/components/SongCard";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { WelcomeSection } from "@/components/WelcomeSection";
+import { supabase } from "@/lib/supabase";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,12 +51,14 @@ const Index = () => {
     setHasSearched(true);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // For now, return mock data
-      // TODO: Replace with actual API calls to Spotify, YouTube, and Genius
-      setResults([mockSongData]);
+      const { data, error } = await supabase.functions.invoke('search-song', {
+        body: { query }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Search failed');
+      }
+      setResults([data]);
       
       toast({
         title: "Search completed",
@@ -63,7 +66,8 @@ const Index = () => {
       });
       
     } catch (err) {
-      setError(`Sorry, we couldn't find any results for "${query}". Please check the spelling or try a different song.`);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(`Sorry, we couldn't find any results for "${query}". ${errorMessage}`);
       setResults([]);
       
       toast({
