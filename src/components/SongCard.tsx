@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Play, ExternalLink, Calendar, Eye, Heart, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
+import { Play, ExternalLink, Calendar, Eye, Heart, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { PopularityChart } from "@/components/PopularityChart";
 
 export interface SongData {
   id: string;
@@ -83,10 +84,7 @@ export const SongCard = ({ song }: SongCardProps) => {
           </div>
           
           <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <TrendingUp className="w-4 h-4" />
-              <span>{song.popularity}% popularity</span>
-            </div>
+            <PopularityChart popularity={song.popularity} songTitle={song.title} />
             <Button
               variant="ghost"
               size="sm"

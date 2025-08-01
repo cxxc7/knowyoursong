@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { SearchBar } from "@/components/SearchBar";
-import { SongCard, SongData } from "@/components/SongCard";
+import { SongData } from "@/components/SongCard";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { WelcomeSection } from "@/components/WelcomeSection";
+import { SearchResults } from "@/components/SearchResults";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
@@ -12,6 +13,7 @@ const Index = () => {
   const [results, setResults] = useState<SongData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [currentQuery, setCurrentQuery] = useState("");
 
   // Mock data for demonstration - will be replaced with real API calls
   const mockSongData: SongData = {
@@ -49,6 +51,7 @@ const Index = () => {
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
+    setCurrentQuery(query);
     
     try {
       const { data, error } = await supabase.functions.invoke('search-song', {
@@ -58,11 +61,14 @@ const Index = () => {
       if (error) {
         throw new Error(error.message || 'Search failed');
       }
-      setResults([data]);
+      
+      // If data is an array, use it directly, otherwise wrap single result in array
+      const resultsArray = Array.isArray(data) ? data : [data];
+      setResults(resultsArray);
       
       toast({
         title: "Search completed",
-        description: `Found results for "${query}"`,
+        description: `Found ${resultsArray.length} result(s) for "${query}"`,
       });
       
     } catch (err) {
@@ -89,11 +95,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {!hasSearched && <WelcomeSection />}
+        {!hasSearched && (
+          <>
+            <div className="mb-8">
+              <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+            </div>
+            <WelcomeSection />
+          </>
+        )}
         
-        <div className="mb-8">
-          <SearchBar onSearch={handleSearch} isLoading={isLoading} />
-        </div>
+        {hasSearched && (
+          <div className="mb-8">
+            <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+          </div>
+        )}
 
         {isLoading && <LoadingSpinner />}
 
@@ -102,20 +117,7 @@ const Index = () => {
         )}
 
         {results.length > 0 && !isLoading && (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Search Results
-              </h2>
-              <p className="text-muted-foreground">
-                Found {results.length} result{results.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-            
-            {results.map((song) => (
-              <SongCard key={song.id} song={song} />
-            ))}
-          </div>
+          <SearchResults results={results} query={currentQuery} />
         )}
 
         {!hasSearched && (
