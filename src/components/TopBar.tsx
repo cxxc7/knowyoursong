@@ -36,7 +36,7 @@ export const TopBar = () => {
           
           <Button variant="ghost" size="sm" asChild>
             <a 
-              href="https://github.com" 
+              href="https://github.com/cxxc7/knowyoursong" 
               target="_blank" 
               rel="noopener noreferrer"
               className="gap-2"
