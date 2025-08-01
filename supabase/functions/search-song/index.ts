@@ -172,7 +172,7 @@ serve(async (req) => {
       artist: track.artists.map(a => a.name).join(', '),
       album: track.album.name,
       releaseDate: track.album.release_date,
-      genre: ['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'Country'][Math.floor(Math.random() * 5)], // Random genres for demo
+      genre: [['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'Country'][Math.floor(Math.random() * 5)]], // Random genres for demo
       popularity: track.popularity,
       spotifyUrl: track.external_urls.spotify,
       youtubeUrl: index === 0 ? youtubeData?.url : undefined, // Only first track gets YouTube
