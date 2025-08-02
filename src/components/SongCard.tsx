@@ -84,7 +84,7 @@ export const SongCard = ({ song }: SongCardProps) => {
           </div>
           
           <div className="flex flex-col items-end gap-2">
-            <PopularityChart popularity={song.popularity} songTitle={song.title} />
+            <PopularityChart popularity={song.popularity} songTitle={song.title} releaseDate={song.releaseDate} />
             <Button
               variant="ghost"
               size="sm"

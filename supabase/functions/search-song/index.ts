@@ -157,16 +157,28 @@ serve(async (req) => {
       throw new Error('Song not found')
     }
 
-    // Process multiple tracks - get additional data for the first track only
+    // Get additional data for ALL tracks
+    const tracksWithData = await Promise.all(
+      spotifyTracks.map(async (track: SpotifyTrack, index: number) => {
+        const [youtubeData, geniusData] = await Promise.all([
+          searchYouTube(`${track.artists[0].name} ${track.name}`),
+          index === 0 ? searchGenius(`${track.artists[0].name} ${track.name}`) : Promise.resolve(null)
+        ])
+        
+        return {
+          track,
+          youtubeData,
+          geniusData: index === 0 ? geniusData : null
+        }
+      })
+    )
+
+    // Get recommendations for the first track
     const firstTrack = spotifyTracks[0]
-    const [youtubeData, geniusData, recommendations] = await Promise.all([
-      searchYouTube(`${firstTrack.artists[0].name} ${firstTrack.name}`),
-      searchGenius(`${firstTrack.artists[0].name} ${firstTrack.name}`),
-      getSpotifyRecommendations(firstTrack.id, spotifyToken)
-    ])
+    const recommendations = await getSpotifyRecommendations(firstTrack.id, spotifyToken)
 
     // Format all tracks
-    const results = spotifyTracks.map((track: SpotifyTrack, index: number) => ({
+    const results = tracksWithData.map(({ track, youtubeData, geniusData }, index) => ({
       id: track.id,
       title: track.name,
       artist: track.artists.map(a => a.name).join(', '),
@@ -175,12 +187,12 @@ serve(async (req) => {
       genre: [['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'Country'][Math.floor(Math.random() * 5)]], // Random genres for demo
       popularity: track.popularity,
       spotifyUrl: track.external_urls.spotify,
-      youtubeUrl: index === 0 ? youtubeData?.url : undefined, // Only first track gets YouTube
+      youtubeUrl: youtubeData?.url || null,
       spotifyPlays: Math.floor(Math.random() * 1000000000), // Mock data
-      youtubeViews: index === 0 ? youtubeData?.viewCount : undefined,
+      youtubeViews: youtubeData?.viewCount || Math.floor(Math.random() * 100000000),
       albumCover: track.album.images[0]?.url,
       preview: track.preview_url,
-      lyrics: index === 0 ? (geniusData?.lyrics || 'Lyrics not available in demo mode. This is a preview of where full lyrics would appear.') : undefined,
+      lyrics: index === 0 ? (geniusData?.lyrics || 'Lyrics not available in demo mode. This is a preview of where full lyrics would appear.') : 'Lyrics not available in demo mode. This is a preview of where full lyrics would appear.',
       chartPosition: Math.floor(Math.random() * 100) + 1, // Mock chart position
       relatedSongs: index === 0 ? recommendations.slice(0, 4).map((relatedTrack: SpotifyTrack) => ({
         id: relatedTrack.id,

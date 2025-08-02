@@ -2,19 +2,32 @@ import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp } from "lucide-react";
 
 interface PopularityChartProps {
   popularity: number;
   songTitle: string;
+  releaseDate: string;
 }
 
 // Mock data for popularity trend over time
-const generateMockData = (currentPopularity: number) => {
+const generateMockData = (currentPopularity: number, selectedYear: number, releaseDate: string) => {
   const data = [];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+  const releaseYear = new Date(releaseDate).getFullYear();
   
-  for (let i = 0; i < 12; i++) {
+  // Only show data from release year onwards
+  if (selectedYear < releaseYear) {
+    return [];
+  }
+  
+  const endMonth = selectedYear === currentYear ? currentMonth : 11;
+  
+  for (let i = 0; i <= endMonth; i++) {
     // Generate some variation around the current popularity
     const variation = (Math.random() - 0.5) * 20;
     const popularity = Math.max(0, Math.min(100, currentPopularity + variation));
@@ -28,9 +41,19 @@ const generateMockData = (currentPopularity: number) => {
   return data;
 };
 
-export const PopularityChart = ({ popularity, songTitle }: PopularityChartProps) => {
+export const PopularityChart = ({ popularity, songTitle, releaseDate }: PopularityChartProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const chartData = generateMockData(popularity);
+  const currentYear = new Date().getFullYear();
+  const releaseYear = new Date(releaseDate).getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  
+  const chartData = generateMockData(popularity, selectedYear, releaseDate);
+  
+  // Generate available years (from release year to current year)
+  const availableYears = [];
+  for (let year = releaseYear; year <= currentYear; year++) {
+    availableYears.push(year);
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -53,6 +76,21 @@ export const PopularityChart = ({ popularity, songTitle }: PopularityChartProps)
         <DialogHeader>
           <DialogTitle>Popularity Trend - {songTitle}</DialogTitle>
         </DialogHeader>
+        
+        <div className="mb-4">
+          <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -88,7 +126,7 @@ export const PopularityChart = ({ popularity, songTitle }: PopularityChartProps)
         </div>
         
         <div className="text-center text-sm text-muted-foreground">
-          <p>Popularity trend over the last 12 months</p>
+          <p>Popularity trend for {selectedYear} {selectedYear === currentYear ? '(up to current month)' : ''}</p>
           <p className="text-xs mt-1">Data shown is representative for demonstration purposes</p>
         </div>
       </DialogContent>
