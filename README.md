@@ -127,4 +127,4 @@ Interactive Recharts-powered visualization showing song popularity trends over t
 
 Built with ❤️ using React, TypeScript, and Supabase.
 
-**Live Demo**: [Visit Know Your Song](https://lovable.app)
+**Live Demo**: [Visit Know Your Song](https://knowyoursong.lovable.app/)
