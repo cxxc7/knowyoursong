@@ -15,6 +15,13 @@ const Index = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [currentQuery, setCurrentQuery] = useState("");
 
+  const handleGoHome = () => {
+    setHasSearched(false);
+    setResults([]);
+    setError(null);
+    setCurrentQuery("");
+  };
+
   // Mock data for demonstration - will be replaced with real API calls
   const mockSongData: SongData = {
     id: "1",
@@ -106,7 +113,7 @@ const Index = () => {
         
         {hasSearched && (
           <div className="mb-8">
-            <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+            <SearchBar onSearch={handleSearch} isLoading={isLoading} onGoHome={handleGoHome} />
           </div>
         )}
 

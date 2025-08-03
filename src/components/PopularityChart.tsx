@@ -127,7 +127,7 @@ export const PopularityChart = ({ popularity, songTitle, releaseDate }: Populari
         
         <div className="text-center text-sm text-muted-foreground">
           <p>Popularity trend for {selectedYear} {selectedYear === currentYear ? '(up to current month)' : ''}</p>
-          <p className="text-xs mt-1">Data shown is representative for demonstration purposes</p>
+          <p className="text-xs mt-1">Popularity score represents streaming performance and chart position relative to other songs</p>
         </div>
       </DialogContent>
     </Dialog>
